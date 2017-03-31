@@ -145,6 +145,10 @@ bool operator==(const FormulaPtr& f1, const FormulaPtr& f2)
     return fast_cast<Until>(f1)->left() == fast_cast<Until>(f2)->left() &&
            fast_cast<Until>(f1)->right() == fast_cast<Until>(f2)->right();
 
+  if (isa<Release>(f1))
+    return fast_cast<Release>(f1)->left() == fast_cast<Release>(f2)->left() &&
+           fast_cast<Release>(f1)->right() == fast_cast<Release>(f2)->right();
+
   assert(isa<True>(f1) || isa<False>(f1));
 
   return true;

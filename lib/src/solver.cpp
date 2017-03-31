@@ -91,6 +91,8 @@ void Solver::_initialize()
   _bitset.release.resize(_number_of_formulas);
   _bitset.since.resize(_number_of_formulas);
   _bitset.triggered.resize(_number_of_formulas);
+  _bitset.past.resize(_number_of_formulas);
+  _bitset.historically.resize(_number_of_formulas);
   _bitset.temporary.resize(_number_of_formulas);
 
   _lhs = std::vector<FormulaID>(_number_of_formulas, FormulaID::max());
@@ -104,16 +106,8 @@ void Solver::_initialize()
     FormulaID lhs(0), rhs(0);
     FormulaPtr left = nullptr, right = nullptr;
 
-    if (isa<Negation>(f)) {
-      if (isa<Until>(fast_cast<Negation>(f)->formula())) {
-        left = simplifier.simplify(make_negation(
-          fast_cast<Until>(fast_cast<Negation>(f)->formula())->left()));
-        right = simplifier.simplify(make_negation(
-          fast_cast<Until>(fast_cast<Negation>(f)->formula())->right()));
-      }
-      else
-        left = fast_cast<Negation>(f)->formula();
-    }
+    if (isa<Negation>(f))
+      left = fast_cast<Negation>(f)->formula();
     else if (isa<Tomorrow>(f))
       left = fast_cast<Tomorrow>(f)->formula();
     else if (isa<Always>(f))
@@ -131,6 +125,10 @@ void Solver::_initialize()
     else if (isa<Until>(f)) {
       left = fast_cast<Until>(f)->left();
       right = fast_cast<Until>(f)->right();
+    }
+    else if (isa<Release>(f)) {
+      left = fast_cast<Release>(f)->left();
+      right = fast_cast<Release>(f)->right();
     }
     else if (isa<Then>(f))
       assert(false);
@@ -203,12 +201,6 @@ void Solver::_add_formula_for_position(const FormulaPtr &formula, FormulaID posi
       break;
 
     case Formula::Type::Negation:
-      if (isa<Until>(fast_cast<Negation>(formula)->formula())) {
-        _bitset.release[position] = true;
-        _lhs[position] = lhs;
-        _rhs[position] = rhs;
-        break;
-      }
       _bitset.negation[position] = true;
       _lhs[position] = lhs;
       break;
@@ -370,7 +362,7 @@ bool Solver::_apply_always_rule()
       assert(frame.to_process[one]);             \
                                                  \
       frame.to_process[one] = false;             \
-      frame.choosen_formula = FormulaID(one);     \
+      frame.choosen_formula = FormulaID(one);    \
       frame.type = Frame::CHOICE;                \
       return true;                               \
     }                                            \
@@ -382,6 +374,7 @@ APPLY_RULE(disjunction)
 APPLY_RULE(eventually)
 APPLY_RULE(until)
 APPLY_RULE(release)
+
 
 #undef APPLY_RULE
 
@@ -409,7 +402,7 @@ loop:
         _result = Result::SATISFIABLE;
         _loop_state = frame.chain->id;
 
-		_print_stats();
+        _print_stats();
 
         return _result;
       }
@@ -476,7 +469,7 @@ loop:
       }
 
       if (_has_release && _apply_release_rule())
-	  {
+      {
         Frame new_frame(frame);
         new_frame.formulas[_lhs[frame.choosen_formula]] = true;
         new_frame.formulas[_rhs[frame.choosen_formula]] = true;
@@ -681,10 +674,8 @@ void Solver::_rollback_to_latest_choice()
       {
         new_frame.formulas[_rhs[top.choosen_formula]] = true;
         if (_bitset.tomorrow[top.choosen_formula + 1]) {
-			if (_lhs[top.choosen_formula + 1] == top.choosen_formula)
-				new_frame.formulas[top.choosen_formula + 1] = true;
-			else
-				new_frame.formulas[top.choosen_formula + 2] = true;
+          new_frame.formulas[top.choosen_formula + 1] = true;
+          assert(_lhs[top.choosen_formula + 1] == top.choosen_formula);
         }
         else {
           new_frame.formulas[top.choosen_formula + 2] = true;
@@ -883,6 +874,16 @@ static bool formula_ordering_func(const FormulaPtr& a, const FormulaPtr& b)
 			return formula_ordering_func(fast_cast<Until>(a)->right(),
 										 fast_cast<Until>(b)->right());
 	}
+
+  if (isa<Release>(a) && isa<Release>(b))
+  {
+    if (fast_cast<Release>(a)->left() != fast_cast<Release>(b)->left())
+      return formula_ordering_func(fast_cast<Release>(a)->left(),
+                     fast_cast<Release>(b)->left());
+    else
+      return formula_ordering_func(fast_cast<Release>(a)->right(),
+                     fast_cast<Release>(b)->right());
+  }
 
 	if (isa<Then>(a) || isa<Then>(b))
 		assert(false);

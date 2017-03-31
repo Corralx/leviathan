@@ -72,6 +72,18 @@ void Simplifier::visit(const Negation *n)
       make_tomorrow(make_negation(fast_cast<Tomorrow>(result)->formula()));
     rulesApplied = true;
   }
+  else if(isa<Until>(result)) {
+    result =
+      make_release(make_negation(fast_cast<Until>(result)->left()),
+                   make_negation(fast_cast<Until>(result)->right()));
+    rulesApplied = true;
+  }
+  else if(isa<Release>(result)) {
+    result =
+      make_until(make_negation(fast_cast<Release>(result)->left()),
+                   make_negation(fast_cast<Release>(result)->right()));
+    rulesApplied = true;
+  }
   else if (isa<Eventually>(result))  // ¬◇p ≡ □¬p
   {
     result =
@@ -433,9 +445,14 @@ void Simplifier::visit(const Until *u)
     result = make_until(left, right);
 }
 
-void Simplifier::visit(const Release *)
+void Simplifier::visit(const Release *r)
 {
-  assert(false && "Unimplemented");
+  r->left()->accept(*this);
+  FormulaPtr left = result;
+  r->right()->accept(*this);
+  FormulaPtr right = result;
+
+  result = make_release(left, right);
 }
 
 void Simplifier::visit(const Since *)

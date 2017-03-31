@@ -47,24 +47,8 @@ void Generator::visit(const Atom *)
 
 void Generator::visit(const Negation *t)
 {
-  if (isa<Until>(t->formula())) {
-    _formulas.push_back(make_tomorrow(make_negation(t->formula())));
-
-    auto lneg = _simplifier.simplify(
-      make_negation(fast_cast<Until>(t->formula())->left()));
-    auto rneg = _simplifier.simplify(
-      make_negation(fast_cast<Until>(t->formula())->right()));
-
-    _formulas.push_back(lneg);
-    _formulas.push_back(rneg);
-
-    lneg->accept(*this);
-    rneg->accept(*this);
-  }
-  else {
-    _formulas.push_back(t->formula());
-    t->formula()->accept(*this);
-  }
+  _formulas.push_back(t->formula());
+  t->formula()->accept(*this);
 }
 
 void Generator::visit(const Tomorrow *t)
@@ -128,9 +112,13 @@ void Generator::visit(const Until *t)
   t->right()->accept(*this);
 }
 
-void Generator::visit(const Release *)
+void Generator::visit(const Release *r)
 {
-  assert(false && "Unimplemented");
+  _formulas.push_back(r->left());
+  _formulas.push_back(r->right());
+  _formulas.push_back(make_tomorrow(make_release(r->left(), r->right())));
+  r->left()->accept(*this);
+  r->right()->accept(*this);
 }
 
 void Generator::visit(const Since *)
