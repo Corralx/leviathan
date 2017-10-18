@@ -86,6 +86,13 @@ set(
   -Wno-c++98-compat -Wno-c++98-compat-pedantic
   -Wno-padded -Wno-weak-vtables -Wno-unknown-pragmas
   -Wno-exit-time-destructors -Wno-switch-enum
+  -Wno-undefined-var-template
+  -Wno-undefined-func-template
+  -Wno-reserved-id-macro -Wno-deprecated
+  -Wno-old-style-cast -Wno-documentation
+  -Wno-documentation-unknown-command
+  -Wno-sign-conversion
+  -Wno-global-constructors -Wno-extra-semi
 )
 
 set(
