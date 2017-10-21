@@ -93,6 +93,7 @@ set(
   -Wno-documentation-unknown-command
   -Wno-sign-conversion
   -Wno-global-constructors -Wno-extra-semi
+  -Wno-unknown-warning-option
 )
 
 set(
