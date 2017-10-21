@@ -139,6 +139,7 @@ FormulaPtr Parser::parseUnary() {
   }
 
   assert(false && "Unknown unary operator!");
+  return nullptr; // unreachable but MSVC complains
 }
 
 FormulaPtr Parser::parseParens() {
