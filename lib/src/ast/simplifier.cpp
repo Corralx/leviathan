@@ -168,7 +168,7 @@ void Simplifier::visit(const Tomorrow *t)
 
 void Simplifier::visit(const Yesterday *)
 {
-  assert(false && "Unimplemented");
+  assert(false && "Yesterday operator found in the formula after the translation phase");
 }
 
 void Simplifier::visit(const Always *a)
@@ -435,27 +435,27 @@ void Simplifier::visit(const Until *u)
 
 void Simplifier::visit(const Release *)
 {
-  assert(false && "Unimplemented");
+  assert(false && "Release operator found in the formula after the translation phase");
 }
 
 void Simplifier::visit(const Since *)
 {
-  assert(false && "Unimplemented");
+  assert(false && "Since operator found in the formula after the translation phase");
 }
 
 void Simplifier::visit(const Triggered *)
 {
-  assert(false && "Unimplemented");
+  assert(false && "Triggered operator found in the formula after the translation phase");
 }
 
 void Simplifier::visit(const Past *)
 {
-  assert(false && "Unimplemented");
+  assert(false && "Past operator found in the formula after the translation phase");
 }
 
 void Simplifier::visit(const Historically *)
 {
-  assert(false && "Unimplemented");
+  assert(false && "Historically operator found in the formula after the translation phase");
 }
 
 

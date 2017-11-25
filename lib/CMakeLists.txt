@@ -24,6 +24,7 @@ set (
   src/ast/formula.cpp
   src/ast/generator.cpp
   src/ast/simplifier.cpp
+  src/ast/translator.cpp
   src/ast/pretty_printer.cpp
   src/solver.cpp
   src/parser/lex.cpp
@@ -42,6 +43,7 @@ set (
   include/pretty_printer.hpp
   include/simplifier.hpp
   src/ast/generator.hpp
+  src/ast/translator.hpp
   include/solver.hpp
   include/visitor.hpp
   include/format.hpp

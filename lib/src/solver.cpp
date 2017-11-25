@@ -5,6 +5,8 @@
 #include "pretty_printer.hpp"
 #include "utility.hpp"
 
+#include "ast/translator.cpp"
+
 #include <cassert>
 
 #ifdef _MSC_VER
@@ -41,11 +43,16 @@ void Solver::_initialize()
   format::debug("Initializing solver...");
   _atom_set.clear();
 
+  /* Translate the formula from LTL+P to LTL if needed */
+  format::debug("Translating formula...");
+  Translator translator;
+  _formula = translator.translate(_formula);
+  
   /* Simplify the formula and put it in normal form */
   format::debug("Simplifing formula...");
   Simplifier simplifier;
   _formula = simplifier.simplify(_formula);
-
+  
   /* Generate every subformulas */
   format::debug("Generating subformulas...");
   Generator gen;
