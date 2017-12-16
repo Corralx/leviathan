@@ -35,7 +35,7 @@ FormulaPtr Translator::translate_p(FormulaPtr f, FormulaPtr& a, std::set<std::st
   }
   else if (isa<Negation>(f)) {
     fp = translate_p(fast_cast<Negation>(f)->formula(), a, ps);
-    return fp;
+    return make_negation(fp);
   }
   else if (isa<Then>(f)) {
     fpl = translate_p(fast_cast<Then>(f)->left(), a, ps);
@@ -208,7 +208,7 @@ void Translator::init_plns (std::set<std::string>& ps, FormulaPtr f) {
     return ;
   else if (isa<Atom>(f)) {
     ps.insert(fast_cast<Atom>(f)->name());
-    format::debug("init_plns: found prop letter, plns.size={}", plns.size());
+    //format::debug("init_plns: found prop letter, plns.size={}", plns.size());
   }
   else if (isa<Conjunction>(f)) {
     init_plns(ps, fast_cast<Conjunction>(f)->left());
