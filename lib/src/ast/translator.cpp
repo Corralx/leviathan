@@ -110,7 +110,7 @@ FormulaPtr Translator::translate_p(FormulaPtr f, FormulaPtr& a, std::set<std::st
     format::debug("--- introduced propositional letter: {}", p.to_string(newh));
     // then, modify the current axioms adding the adhoc axioms which regulate the newly added propositional letter's semantics (and these axioms are modified as side effect, so there's no need to return them)
     a = conc(a, 
-      make_conjunction(make_conjunction(make_conjunction(make_conjunction(make_conjunction(make_iff(newt, make_disjunction(fpr, make_conjunction(fpl, fpr))), make_conjunction(newh, fpr)), make_negation(news)), make_always(make_iff(newt, make_disjunction(newh, news)))), make_always(make_iff(make_tomorrow(newh), make_conjunction(newh, make_tomorrow(fpr))))), make_always(make_iff(make_tomorrow(news), make_conjunction(make_tomorrow(fpr), make_disjunction(news, fpl)))))
+      make_conjunction(make_conjunction(make_conjunction(make_conjunction(make_iff(newt, make_disjunction(fpr, make_conjunction(fpl, fpr))), make_disjunction(make_conjunction(newh, fpr), make_negation(news))), make_always(make_iff(newt, make_disjunction(newh, news)))), make_always(make_iff(make_tomorrow(newh), make_conjunction(newh, make_tomorrow(fpr))))), make_always(make_iff(make_tomorrow(news), make_conjunction(make_tomorrow(fpr), make_disjunction(news, fpl)))))
     );
     format::verbose("{} ->    {}", p.to_string(f), p.to_string(a));
     // finally, we return the propositional letter which took the role of f (Triggered sub)
