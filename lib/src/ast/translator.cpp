@@ -91,7 +91,7 @@ FormulaPtr Translator::translate_p(FormulaPtr f, FormulaPtr& a, std::set<std::st
     FormulaPtr newf = make_atom(prop_name(f, ps));
     format::debug("--- introduced propositional letter: {}", p.to_string(newf));
     // then, modify the current axioms adding the adhoc axioms which regulate the newly added propositional letter's semantics (and these axioms are modified as side effect, so there's no need to return them)
-    a = conc(a, make_conjunction(make_iff(newf, fpr), make_always(make_iff(make_tomorrow(newf), make_conjunction(make_tomorrow(fpl), make_disjunction(newf, fpr))))));
+    a = conc(a, make_conjunction(make_iff(newf, fpr), make_always(make_iff(make_tomorrow(newf), make_disjunction(make_tomorrow(fpr), make_conjunction(newf, make_tomorrow(fpl)))))));
     format::verbose("{} ->    {}", p.to_string(f), p.to_string(a));
     // finally, we return the propositional letter which took the role of f (Since sub)
     return newf;
@@ -110,7 +110,7 @@ FormulaPtr Translator::translate_p(FormulaPtr f, FormulaPtr& a, std::set<std::st
     format::debug("--- introduced propositional letter: {}", p.to_string(newh));
     // then, modify the current axioms adding the adhoc axioms which regulate the newly added propositional letter's semantics (and these axioms are modified as side effect, so there's no need to return them)
     a = conc(a, 
-      make_conjunction(make_conjunction(make_conjunction(make_conjunction(make_iff(newt, fpr), make_disjunction(make_conjunction(newh, fpr), make_iff(news, fpl))), make_always(make_iff(newt, make_disjunction(newh, news)))), make_always(make_iff(make_tomorrow(newh), make_conjunction(newh, make_tomorrow(fpr))))), make_always(make_iff(make_tomorrow(news), make_conjunction(make_tomorrow(fpr), make_disjunction(news, fpl)))))
+      make_conjunction(make_conjunction(make_conjunction(make_conjunction(make_iff(newt, fpr), make_disjunction(make_conjunction(newh, fpr), make_iff(news, fpl))), make_always(make_iff(newt, make_disjunction(newh, news)))), make_always(make_iff(make_tomorrow(newh), make_conjunction(newh, make_tomorrow(fpr))))), make_always(make_iff(make_tomorrow(news), make_disjunction(make_tomorrow(fpl), make_conjunction(news, make_tomorrow(fpr))))))
     );
     format::verbose("{} ->    {}", p.to_string(f), p.to_string(a));
     // finally, we return the propositional letter which took the role of f (Triggered sub)
