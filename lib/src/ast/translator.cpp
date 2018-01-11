@@ -1,3 +1,18 @@
+/*
+  Copyright (c) 2017, Alex Falcon
+  All rights reserved.
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+  * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+  * The names of its contributors may not be used to endorse or promote
+    products derived from this software without specific prior written
+    permission.
+*/
+
 #include "translator.hpp"
 #include "format.hpp"
 #include "pretty_printer.hpp"
@@ -8,7 +23,7 @@ namespace detail {
 FormulaPtr Translator::translate(FormulaPtr f) {
   FormulaPtr a = make_true();
   init_plns(plns, f);
-  FormulaPtr ff = translate_p(f, a, plns); // TODO emptyformula
+  FormulaPtr ff = translate_p(f, a, plns);
   
   PrettyPrinter p;
   format::debug("Translator::Translated formula: ");
@@ -142,7 +157,7 @@ FormulaPtr Translator::translate_p(FormulaPtr f, FormulaPtr& a, std::set<std::st
     // finally, we return the propositional letter which took the role of f (Historically sub)
     return newf;
   }
-  return f; // TODO non dovrebbe arrivare qua
+  return f; // TODO it shouldn't come this far anyway
 }
 
 /* prop_name is used to help creating a name for a new propositional letter */
@@ -167,21 +182,21 @@ std::string Translator::prop_name_r (FormulaPtr f, std::set<std::string>& ps) {
   else if (isa<Atom>(f))
     return fast_cast<Atom>(f)->name();
   else if (isa<Conjunction>(f))
-    return "c" + prop_name(fast_cast<Conjunction>(f)->left(), ps); // TODO 
+    return "c" + prop_name(fast_cast<Conjunction>(f)->left(), ps);
   else if (isa<Disjunction>(f))
-    return "d" + prop_name(fast_cast<Disjunction>(f)->left(), ps); // TODO 
+    return "d" + prop_name(fast_cast<Disjunction>(f)->left(), ps);
   else if (isa<Negation>(f))
     return "n" + prop_name(fast_cast<Negation>(f)->formula(), ps);
   else if (isa<Then>(f))
-    return "m" + prop_name(fast_cast<Then>(f)->left(), ps); // TODO 
+    return "m" + prop_name(fast_cast<Then>(f)->left(), ps);
   else if (isa<Iff>(f))
-    return "i" + prop_name(fast_cast<Iff>(f)->left(), ps); // TODO 
+    return "i" + prop_name(fast_cast<Iff>(f)->left(), ps);
   else if (isa<Tomorrow>(f))
     return "x" + prop_name(fast_cast<Tomorrow>(f)->formula(), ps);
   else if (isa<Until>(f))
-    return "u" + prop_name(fast_cast<Until>(f)->left(), ps); // TODO 
+    return "u" + prop_name(fast_cast<Until>(f)->left(), ps);
   else if (isa<Release>(f))
-    return "r" + prop_name(fast_cast<Release>(f)->left(), ps); // TODO 
+    return "r" + prop_name(fast_cast<Release>(f)->left(), ps);
   else if (isa<Eventually>(f))
     return "f" + prop_name(fast_cast<Eventually>(f)->formula(), ps);
   else if (isa<Always>(f))
@@ -189,9 +204,9 @@ std::string Translator::prop_name_r (FormulaPtr f, std::set<std::string>& ps) {
   else if (isa<Yesterday>(f))
     return "y" + prop_name(fast_cast<Yesterday>(f)->formula(), ps);
   else if (isa<Since>(f))
-    return "s" + prop_name(fast_cast<Since>(f)->left(), ps); // TODO 
+    return "s" + prop_name(fast_cast<Since>(f)->left(), ps);
   else if (isa<Triggered>(f))
-    return "t" + prop_name(fast_cast<Triggered>(f)->left(), ps); // TODO 
+    return "t" + prop_name(fast_cast<Triggered>(f)->left(), ps);
   else if (isa<Past>(f))
     return "p" + prop_name(fast_cast<Past>(f)->formula(), ps);
   else if (isa<Historically>(f))
@@ -199,14 +214,23 @@ std::string Translator::prop_name_r (FormulaPtr f, std::set<std::string>& ps) {
   return "-err-";
 }
 
+/*
+ * At the beginning, translate_p is called with two parameters: the formula to be translated and a "buffer", initially set to True, in which the axioms are added.
+ * Everytime an axiom is added to it, conc checks whether the first formula (I always call conc(buffer, new_axiom) in such a way that buffer is the one which may be True)
+ *   is True and, if it is True, it removes it.
+ */
 FormulaPtr Translator::conc (FormulaPtr ax, FormulaPtr fr) {
   return (isa<True>(ax) ? fr : make_conjunction(fr, ax));
 }
 
+/*
+ * init_plns looks for all the already-used propositional letters in the formula and adds them in the set ps
+ */
 void Translator::init_plns (std::set<std::string>& ps, FormulaPtr f) {
   if (isa<True>(f) || isa<False>(f))
     return ;
   else if (isa<Atom>(f)) {
+    /* only when it reaches this point, the propositional letter used is actually inserted in the set */
     ps.insert(fast_cast<Atom>(f)->name());
     //format::debug("init_plns: found prop letter, plns.size={}", plns.size());
   }
