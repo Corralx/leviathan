@@ -20,8 +20,17 @@
 namespace LTL {
 namespace detail {
 
+
+/*
+ * Main public method available: given an LTL+P formula, it translates it to an equisatisfiable LTL formula.
+ * To do so, it replaces the past operators with propositional letters and then it adds (in conjunction to the formula),
+ *  some ad-hoc axioms to make the prop letter behave as the replaced operator.
+ */
 FormulaPtr Translator::translate(FormulaPtr f) {
+  // "a" is a buffer formula, ad-hoc axioms will be added in conjunction to it
   FormulaPtr a = make_true();
+  
+  // "plns" is a set in which propositional letters are stored
   init_plns(plns, f);
   FormulaPtr ff = translate_p(f, a, plns);
   
@@ -32,6 +41,16 @@ FormulaPtr Translator::translate(FormulaPtr f) {
   return conc(ff, a);
 }
 
+/* 
+ * translate_p is an internal method which actually does the translation.
+ * - in the base cases of True, False and Atoms, nothing is to be done
+ * - in the case of future-time operators, it has only to recusively check for past-time operators 
+ * - in the case of past-time operators,
+ * - - first of all, recursion on the subformulae
+ * - - then, a new propositional letter is created
+ * - - then, "a" is modified adding the ad-hoc axioms
+ * - - finally, the fresh propositional letter is returned
+ */
 FormulaPtr Translator::translate_p(FormulaPtr f, FormulaPtr& a, std::set<std::string>& ps) {
   PrettyPrinter p;
   FormulaPtr fp, fpl, fpr;
@@ -86,81 +105,61 @@ FormulaPtr Translator::translate_p(FormulaPtr f, FormulaPtr& a, std::set<std::st
   }
   else if (isa<Yesterday>(f)) {
     format::debug("In Yesterday");
-    // first, recursion with the current axioms and the subformula of f (note: there may be side effects on the current axioms)
     fp = translate_p(fast_cast<Yesterday>(f)->formula(), a, ps);
-    // then, we need to introduce a new propositional letter which takes the role of f (Yesterday sub)
     FormulaPtr newf = make_atom(prop_name(f, ps));
     format::debug("--- introduced propositional letter: {}", p.to_string(newf));
-    // then, modify the current axioms adding the adhoc axioms which regulate the newly added propositional letter's semantics (and these axioms are modified as side effect, so there's no need to return them)
     a = conc(a, make_conjunction(make_negation(newf), make_always(make_iff(make_tomorrow(newf), fp)))); 
     format::verbose("{} ->    {}", p.to_string(f), p.to_string(a));
-    // finally, we return the propositional letter which took the role of f (Yesterday sub)
     return newf;
   }
   else if (isa<Since>(f)) {
     format::debug("In Since");
-    // first, recursion with the current axioms and the subformula of f (note: there may be side effects on the current axioms)
     fpl = translate_p(fast_cast<Since>(f)->left(), a, ps);
     fpr = translate_p(fast_cast<Since>(f)->right(), a, ps);
-    // then, we need to introduce a new propositional letter which takes the role of f (Since sub)
     FormulaPtr newf = make_atom(prop_name(f, ps));
     format::debug("--- introduced propositional letter: {}", p.to_string(newf));
-    // then, modify the current axioms adding the adhoc axioms which regulate the newly added propositional letter's semantics (and these axioms are modified as side effect, so there's no need to return them)
     a = conc(a, make_conjunction(make_iff(newf, fpr), make_always(make_iff(make_tomorrow(newf), make_disjunction(make_tomorrow(fpr), make_conjunction(newf, make_tomorrow(fpl)))))));
     format::verbose("{} ->    {}", p.to_string(f), p.to_string(a));
-    // finally, we return the propositional letter which took the role of f (Since sub)
     return newf;
   }
   else if (isa<Triggered>(f)) {
     format::debug("In Triggered");
-    // first, recursion with the current axioms and the subformula of f (note: there may be side effects on the current axioms)
     fpl = translate_p(fast_cast<Triggered>(f)->left(), a, ps);
     fpr = translate_p(fast_cast<Triggered>(f)->right(), a, ps);
-    // then, we need to introduce a new propositional letter which takes the role of f (Triggered sub), and two prop letters for Since and Historically which will be used in Triggered semantics's axioms
     FormulaPtr newt = make_atom(prop_name(f, ps));
     format::debug("--- introduced propositional letter: {}", p.to_string(newt));
     FormulaPtr news = make_atom(prop_name(make_since(fpr, fpl), ps));
     format::debug("--- introduced propositional letter: {}", p.to_string(news));
     FormulaPtr newh = make_atom(prop_name(make_historically(fpr), ps));
     format::debug("--- introduced propositional letter: {}", p.to_string(newh));
-    // then, modify the current axioms adding the adhoc axioms which regulate the newly added propositional letter's semantics (and these axioms are modified as side effect, so there's no need to return them)
     a = conc(a, 
       make_conjunction(make_conjunction(make_conjunction(make_conjunction(make_iff(newt, fpr), make_disjunction(make_conjunction(newh, fpr), make_iff(news, fpl))), make_always(make_iff(newt, make_disjunction(newh, news)))), make_always(make_iff(make_tomorrow(newh), make_conjunction(newh, make_tomorrow(fpr))))), make_always(make_iff(make_tomorrow(news), make_disjunction(make_tomorrow(fpl), make_conjunction(news, make_tomorrow(fpr))))))
     );
     format::verbose("{} ->    {}", p.to_string(f), p.to_string(a));
-    // finally, we return the propositional letter which took the role of f (Triggered sub)
     return newt;
   }
   else if (isa<Past>(f)) {
     format::debug("In Past");
-    // first, recursion with the current axioms and the subformula of f (note: there may be side effects on the current axioms)
     fp = translate_p(fast_cast<Past>(f)->formula(), a, ps);
-    // then, we need to introduce a new propositional letter which takes the role of f (Past sub)
     FormulaPtr newf = make_atom(prop_name(f, ps));
     format::debug("--- introduced propositional letter: {}", p.to_string(newf));
-    // then, modify the current axioms adding the adhoc axioms which regulate the newly added propositional letter's semantics (and these axioms are modified as side effect, so there's no need to return them)
     a = conc(a, make_conjunction(make_iff(newf, fp), make_always(make_iff(make_tomorrow(newf), make_disjunction(newf, fp))))); 
     format::verbose("{} ->    {}", p.to_string(f), p.to_string(a));
-    // finally, we return the propositional letter which took the role of f (Past sub)
     return newf;
   }
   else if (isa<Historically>(f)) {
     format::debug("In Historically");
-    // first, recursion with the current axioms and the subformula of f (note: there may be side effects on the current axioms)
     fp = translate_p(fast_cast<Historically>(f)->formula(), a, ps);
-    // then, we need to introduce a new propositional letter which takes the role of f (Historically sub)
     FormulaPtr newf = make_atom(prop_name(f, ps));
     format::debug("--- introduced propositional letter: {}", p.to_string(newf));
-    // then, modify the current axioms adding the adhoc axioms which regulate the newly added propositional letter's semantics (and these axioms are modified as side effect, so there's no need to return them)
     a = conc(a, make_conjunction(make_conjunction(newf, fp), make_always(make_iff(make_tomorrow(newf), make_conjunction(newf, make_tomorrow(fp)))))); 
     format::verbose("{} ->    {}", p.to_string(f), p.to_string(a));
-    // finally, we return the propositional letter which took the role of f (Historically sub)
     return newf;
   }
   return f; // TODO it shouldn't come this far anyway
 }
 
-/* prop_name is used to help creating a name for a new propositional letter */
+/* prop_name is used to help creating a name for the new propositional letter */
 std::string Translator::prop_name (FormulaPtr f, std::set<std::string>& ps) {
   std::string tmp;
   int c = 0;
