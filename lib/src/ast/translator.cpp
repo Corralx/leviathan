@@ -108,6 +108,10 @@ FormulaPtr Translator::translate_p(FormulaPtr f, FormulaPtr& a, std::set<std::st
     fp = translate_p(fast_cast<Yesterday>(f)->formula(), a, ps);
     FormulaPtr newf = make_atom(prop_name(f, ps));
     format::debug("--- introduced propositional letter: {}", p.to_string(newf));
+    /*
+     * Axiom used for Y fp (and let y be the prop letter introduced for it): 
+     * ! y & G (X y <=> fp)
+     */
     a = conc(a, make_conjunction(make_negation(newf), make_always(make_iff(make_tomorrow(newf), fp)))); 
     format::verbose("{} ->    {}", p.to_string(f), p.to_string(a));
     return newf;
@@ -118,6 +122,10 @@ FormulaPtr Translator::translate_p(FormulaPtr f, FormulaPtr& a, std::set<std::st
     fpr = translate_p(fast_cast<Since>(f)->right(), a, ps);
     FormulaPtr newf = make_atom(prop_name(f, ps));
     format::debug("--- introduced propositional letter: {}", p.to_string(newf));
+    /*
+     * Axiom used for fpl S fpr (and let s be the prop letter introduced for it): 
+     * (s <=> fpr) & G (X s <=> (X fpr | (s & X fpl)))
+     */
     a = conc(a, make_conjunction(make_iff(newf, fpr), make_always(make_iff(make_tomorrow(newf), make_disjunction(make_tomorrow(fpr), make_conjunction(newf, make_tomorrow(fpl)))))));
     format::verbose("{} ->    {}", p.to_string(f), p.to_string(a));
     return newf;
@@ -132,6 +140,10 @@ FormulaPtr Translator::translate_p(FormulaPtr f, FormulaPtr& a, std::set<std::st
     format::debug("--- introduced propositional letter: {}", p.to_string(news));
     FormulaPtr newh = make_atom(prop_name(make_historically(fpr), ps));
     format::debug("--- introduced propositional letter: {}", p.to_string(newh));
+    /*
+     * Axiom used for fpl T fpr (and let t be the prop letter introduced for it, also let h be the prop letter for (H fpr), s be the prop letter for (fpr S fpl)): 
+     * (t <=> fpr) & ((h & fpr) | (s <=> fpl)) & G (t <=> h | s) & G (X h <=> h & X fpr) & G (X s <=> (X fpl | (s & X fpr))
+     */
     a = conc(a, 
       make_conjunction(make_conjunction(make_conjunction(make_conjunction(make_iff(newt, fpr), make_disjunction(make_conjunction(newh, fpr), make_iff(news, fpl))), make_always(make_iff(newt, make_disjunction(newh, news)))), make_always(make_iff(make_tomorrow(newh), make_conjunction(newh, make_tomorrow(fpr))))), make_always(make_iff(make_tomorrow(news), make_disjunction(make_tomorrow(fpl), make_conjunction(news, make_tomorrow(fpr))))))
     );
@@ -143,6 +155,10 @@ FormulaPtr Translator::translate_p(FormulaPtr f, FormulaPtr& a, std::set<std::st
     fp = translate_p(fast_cast<Past>(f)->formula(), a, ps);
     FormulaPtr newf = make_atom(prop_name(f, ps));
     format::debug("--- introduced propositional letter: {}", p.to_string(newf));
+    /*
+     * Axiom used for P fp (and let p be the prop letter introduced for it): 
+     * (p <=> fp) & G (X p <=> p | fp)
+     */
     a = conc(a, make_conjunction(make_iff(newf, fp), make_always(make_iff(make_tomorrow(newf), make_disjunction(newf, fp))))); 
     format::verbose("{} ->    {}", p.to_string(f), p.to_string(a));
     return newf;
@@ -152,6 +168,10 @@ FormulaPtr Translator::translate_p(FormulaPtr f, FormulaPtr& a, std::set<std::st
     fp = translate_p(fast_cast<Historically>(f)->formula(), a, ps);
     FormulaPtr newf = make_atom(prop_name(f, ps));
     format::debug("--- introduced propositional letter: {}", p.to_string(newf));
+    /*
+     * Axiom used for H fp (and let h be the prop letter introduced for it): 
+     * (h & fp) & G (X h <=> h & X fp)
+     */
     a = conc(a, make_conjunction(make_conjunction(newf, fp), make_always(make_iff(make_tomorrow(newf), make_conjunction(newf, make_tomorrow(fp)))))); 
     format::verbose("{} ->    {}", p.to_string(f), p.to_string(a));
     return newf;
