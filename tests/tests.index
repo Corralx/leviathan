@@ -324,7 +324,6 @@ tests/rozier/formulas/n3/P0.7/L80/P0.7N3L80_3.pltl;SAT
 tests/rozier/formulas/n3/P0.7/L80/P0.7N3L80_4.pltl;SAT
 tests/rozier/formulas/n3/P0.7/L80/P0.7N3L80_5.pltl;SAT
 tests/rozier/formulas/n3/P0.7/L80/P0.7N3L80_6.pltl;SAT
-tests/rozier/formulas/n3/P0.7/L80/P0.7N3L80_7.pltl;SAT
 tests/rozier/formulas/n3/P0.7/L80/P0.7N3L80_8.pltl;SAT
 tests/rozier/formulas/n3/P0.7/L80/P0.7N3L80_9.pltl;SAT
 tests/rozier/formulas/n3/P0.7/L70/P0.7N3L70_1.pltl;SAT
@@ -634,7 +633,6 @@ tests/rozier/formulas/n4/P0.7/L100/P0.7N4L100_10.pltl;SAT
 tests/rozier/formulas/n4/P0.7/L100/P0.7N4L100_2.pltl;SAT
 tests/rozier/formulas/n4/P0.7/L100/P0.7N4L100_3.pltl;SAT
 tests/rozier/formulas/n4/P0.7/L100/P0.7N4L100_4.pltl;SAT
-tests/rozier/formulas/n4/P0.7/L100/P0.7N4L100_5.pltl;SAT
 tests/rozier/formulas/n4/P0.7/L100/P0.7N4L100_6.pltl;UNSAT
 tests/rozier/formulas/n4/P0.7/L100/P0.7N4L100_7.pltl;SAT
 tests/rozier/formulas/n4/P0.7/L100/P0.7N4L100_8.pltl;SAT
@@ -1414,7 +1412,6 @@ tests/schuppan/O1formula/O1formula6.pltl;UNSAT
 tests/schuppan/O1formula/O1formula7.pltl;UNSAT
 tests/schuppan/O1formula/O1formula8.pltl;UNSAT
 tests/schuppan/O1formula/O1formula9.pltl;UNSAT
-tests/schuppan/phltl/phltl_2_1.pltl;UNSAT
 tests/trp/N12x/1/pltl-12-0-1-3-0-200000.pltl;SAT
 tests/trp/N12x/1/pltl-12-0-1-3-0-200001.pltl;SAT
 tests/trp/N12x/1/pltl-12-0-1-3-0-200003.pltl;SAT
@@ -1500,15 +1497,9 @@ tests/trp/N5x/10/pltl-5-0-10-3-0-200001.pltl;SAT
 tests/trp/N5x/10/pltl-5-0-10-3-0-200004.pltl;SAT
 tests/trp/N5x/10/pltl-5-0-10-3-0-200009.pltl;SAT
 tests/trp/N5x/1/pltl-5-0-1-3-0-200000.pltl;SAT
-tests/trp/N5x/1/pltl-5-0-1-3-0-200001.pltl;SAT
 tests/trp/N5x/1/pltl-5-0-1-3-0-200002.pltl;SAT
-tests/trp/N5x/1/pltl-5-0-1-3-0-200003.pltl;SAT
-tests/trp/N5x/1/pltl-5-0-1-3-0-200004.pltl;SAT
-tests/trp/N5x/1/pltl-5-0-1-3-0-200005.pltl;SAT
-tests/trp/N5x/1/pltl-5-0-1-3-0-200006.pltl;SAT
 tests/trp/N5x/1/pltl-5-0-1-3-0-200007.pltl;SAT
 tests/trp/N5x/1/pltl-5-0-1-3-0-200008.pltl;SAT
-tests/trp/N5x/1/pltl-5-0-1-3-0-200009.pltl;SAT
 tests/trp/N5x/12/pltl-5-0-12-3-0-200009.pltl;SAT
 tests/trp/N5x/11/pltl-5-0-11-3-0-200001.pltl;SAT
 tests/trp/N5x/11/pltl-5-0-11-3-0-200007.pltl;SAT
@@ -1519,11 +1510,8 @@ tests/trp/N5x/19/pltl-5-0-19-3-0-200006.pltl;SAT
 tests/trp/N5x/18/pltl-5-0-18-3-0-200000.pltl;SAT
 tests/trp/N5x/20/pltl-5-0-20-3-0-200006.pltl;SAT
 tests/trp/N5x/2/pltl-5-0-2-3-0-200001.pltl;SAT
-tests/trp/N5x/2/pltl-5-0-2-3-0-200002.pltl;SAT
-tests/trp/N5x/2/pltl-5-0-2-3-0-200003.pltl;SAT
 tests/trp/N5x/2/pltl-5-0-2-3-0-200006.pltl;SAT
 tests/trp/N5x/2/pltl-5-0-2-3-0-200007.pltl;SAT
-tests/trp/N5x/2/pltl-5-0-2-3-0-200009.pltl;SAT
 tests/trp/N5x/22/pltl-5-0-22-3-0-200004.pltl;SAT
 tests/trp/N5x/3/pltl-5-0-3-3-0-200001.pltl;SAT
 tests/trp/N5x/3/pltl-5-0-3-3-0-200002.pltl;SAT
@@ -1531,7 +1519,6 @@ tests/trp/N5x/3/pltl-5-0-3-3-0-200003.pltl;SAT
 tests/trp/N5x/3/pltl-5-0-3-3-0-200008.pltl;SAT
 tests/trp/N5x/4/pltl-5-0-4-3-0-200004.pltl;SAT
 tests/trp/N5x/4/pltl-5-0-4-3-0-200005.pltl;SAT
-tests/trp/N5x/4/pltl-5-0-4-3-0-200008.pltl;SAT
 tests/trp/N5x/5/pltl-5-0-5-3-0-200000.pltl;SAT
 tests/trp/N5x/5/pltl-5-0-5-3-0-200002.pltl;SAT
 tests/trp/N5y/1/pltl-5-0-1-3-0-200000.pltl;SAT
@@ -2006,7 +1993,6 @@ tests/rozier/formulas/n1/P0.95/L100/P0.95N1L100_10.pltl;SAT
 tests/rozier/formulas/n1/P0.95/L100/P0.95N1L100_4.pltl;SAT
 tests/rozier/formulas/n1/P0.95/L100/P0.95N1L100_5.pltl;SAT
 tests/rozier/formulas/n1/P0.95/L100/P0.95N1L100_6.pltl;SAT
-tests/rozier/formulas/n1/P0.95/L100/P0.95N1L100_7.pltl;SAT
 tests/rozier/formulas/n1/P0.95/L100/P0.95N1L100_8.pltl;SAT
 tests/rozier/formulas/n1/P0.95/L100/P0.95N1L100_9.pltl;SAT
 tests/rozier/formulas/n1/P0.95/L10/P0.95N1L10_1.pltl;SAT
@@ -2059,7 +2045,6 @@ tests/rozier/formulas/n1/P0.95/L40/P0.95N1L40_7.pltl;UNSAT
 tests/rozier/formulas/n1/P0.95/L40/P0.95N1L40_8.pltl;SAT
 tests/rozier/formulas/n1/P0.95/L40/P0.95N1L40_9.pltl;SAT
 tests/rozier/formulas/n1/P0.95/L70/P0.95N1L70_1.pltl;SAT
-tests/rozier/formulas/n1/P0.95/L70/P0.95N1L70_10.pltl;SAT
 tests/rozier/formulas/n1/P0.95/L70/P0.95N1L70_2.pltl;SAT
 tests/rozier/formulas/n1/P0.95/L70/P0.95N1L70_3.pltl;SAT
 tests/rozier/formulas/n1/P0.95/L70/P0.95N1L70_4.pltl;SAT

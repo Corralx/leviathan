@@ -63,6 +63,7 @@ public:
 		uint64_t total_frames = 1;
 		uint64_t maximum_model_size = 1;
 		uint64_t current_model_size = 0; // TODO: Currently not implemented
+		uint64_t total_steps = 0;
 		uint64_t cross_by_contradiction = 0;
 		uint64_t cross_by_prune = 0;
 	};
@@ -127,6 +128,7 @@ private:
     Bitset triggered;
     Bitset past;
     Bitset historically;
+		Bitset eventualities;
 
 		/* This is used to do computations avoiding allocations */
 		Bitset temporary;
@@ -135,7 +137,7 @@ private:
 	std::vector<FormulaID> _lhs;
 	std::vector<FormulaID> _rhs;
 	std::unordered_map<FormulaID, std::string> _atom_set;
-	
+
 	std::vector<FormulaID> _fw_eventualities_lut;
 	std::vector<FormulaID> _bw_eventualities_lut;
 
@@ -174,9 +176,12 @@ private:
 
 	void _print_stats() const;
 
-	void __dump_current_formulas() const;
-	void __dump_current_eventualities() const;
-	void __dump_eventualities(FrameID id) const;
+	void __dump_frame(Frame const*frame) const;
+	void __dump_frame_formulas(Frame const*frame) const;
+	void __dump_requested_eventualities(Frame const*frame) const;
+	void __dump_satisfied_eventualities(Frame const*frame) const;
+	void __dump_current_branch() const;
+
 };
 
 }

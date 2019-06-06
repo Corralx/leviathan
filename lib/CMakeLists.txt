@@ -20,7 +20,7 @@ find_package (Boost 1.36.0 REQUIRED COMPONENTS system thread)
 # Leviathan library
 #
 set (
-  SRC 
+  SRC
   src/ast/formula.cpp
   src/ast/generator.cpp
   src/ast/simplifier.cpp
@@ -47,7 +47,7 @@ set (
   include/format.hpp
 )
 
-# Here adding the headers is redundant, but makes them appear in 
+# Here adding the headers is redundant, but makes them appear in
 # project files made by IDE generators (Xcode, VS, ecc...)
 add_library (leviathan STATIC ${SRC} ${HEADERS})
 
@@ -94,20 +94,20 @@ set(
   -Wno-sign-conversion
   -Wno-global-constructors -Wno-extra-semi
   -Wno-unknown-warning-option
+  -Wno-zero-as-null-pointer-constant
+  -Wno-shadow-field
 )
 
 set(
-  GNU_WARNINGS -Wall -Wextra -pedantic -Werror 
+  GNU_WARNINGS -Wall -Wextra -pedantic -Werror
   -Wno-pragmas -Wno-unknown-pragmas
 )
 
 set(MSVC_WARNINGS /wd4068 /wd4702 /W4 /WX)
 
 target_compile_options(
-  leviathan PUBLIC 
+  leviathan PUBLIC
   "$<$<CXX_COMPILER_ID:MSVC>:${MSVC_WARNINGS}>"
   "$<$<CXX_COMPILER_ID:GNU>:${GNU_WARNINGS}>"
   "$<$<CXX_COMPILER_ID:Clang>:${CLANG_WARNINGS}>"
 )
-
-

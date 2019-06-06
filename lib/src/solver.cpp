@@ -6,6 +6,7 @@
 #include "utility.hpp"
 
 #include <cassert>
+#include <deque>
 
 #ifdef _MSC_VER
 #define __builtin_expect(cond, value) (cond)
@@ -91,6 +92,7 @@ void Solver::_initialize()
   _bitset.release.resize(_number_of_formulas);
   _bitset.since.resize(_number_of_formulas);
   _bitset.triggered.resize(_number_of_formulas);
+  _bitset.eventualities.resize(_number_of_formulas);
   _bitset.temporary.resize(_number_of_formulas);
 
   _lhs = std::vector<FormulaID>(_number_of_formulas, FormulaID::max());
@@ -155,12 +157,11 @@ void Solver::_initialize()
     std::vector<FormulaID>(_number_of_formulas, FormulaID::max());
   std::vector<FormulaPtr> eventualities;
   for (uint64_t i = 0; i < _subformulas.size(); ++i) {
-    if (_bitset.eventually[i])
+    if(_bitset.eventually[i]) {
+      _bitset.eventualities[_lhs[i]] = true;
       eventualities.push_back(_subformulas[_lhs[i]]);
-    else if (_bitset.until[i])
-      eventualities.push_back(_subformulas[_rhs[i]]);
-    else if (_bitset.release[i]) {
-      eventualities.push_back(_subformulas[_lhs[i]]);
+    } else if(_bitset.until[i]) {
+      _bitset.eventualities[_rhs[i]] = true;
       eventualities.push_back(_subformulas[_rhs[i]]);
     }
   }
@@ -180,6 +181,12 @@ void Solver::_initialize()
   }
 
   format::debug("Found {} eventualities", eventualities.size());
+  PrettyPrinter p;
+  format::verbose("Eventualities:");
+  for(size_t i = 0; i < _number_of_formulas; ++i) {
+    if(_bitset.eventualities[i])
+      format::verbose("- {}", p.to_string(_subformulas[i]));
+  }
 
   /* We are now ready to start the computation */
   _has_eventually = _bitset.eventually.any();
@@ -355,7 +362,7 @@ bool Solver::_apply_always_rule()
   return true;
 }
 
-#define APPLY_RULE(rule)                         \
+#define DEFINE_DISJUNCTIVE_RULE(rule)            \
   bool Solver::_apply_##rule##_rule()            \
   {                                              \
     Frame &frame = _stack.top();                 \
@@ -370,7 +377,7 @@ bool Solver::_apply_always_rule()
       assert(frame.to_process[one]);             \
                                                  \
       frame.to_process[one] = false;             \
-      frame.choosen_formula = FormulaID(one);     \
+      frame.choosen_formula = FormulaID(one);    \
       frame.type = Frame::CHOICE;                \
       return true;                               \
     }                                            \
@@ -378,12 +385,12 @@ bool Solver::_apply_always_rule()
     return false;                                \
   }
 
-APPLY_RULE(disjunction)
-APPLY_RULE(eventually)
-APPLY_RULE(until)
-APPLY_RULE(release)
+DEFINE_DISJUNCTIVE_RULE(disjunction)
+DEFINE_DISJUNCTIVE_RULE(eventually)
+DEFINE_DISJUNCTIVE_RULE(until)
+DEFINE_DISJUNCTIVE_RULE(release)
 
-#undef APPLY_RULE
+#undef DEFINE_DISJUNCTIVE_RULE
 
 Solver::Result Solver::solution()
 {
@@ -409,7 +416,7 @@ loop:
         _result = Result::SATISFIABLE;
         _loop_state = frame.chain->id;
 
-		_print_stats();
+		    _print_stats();
 
         return _result;
       }
@@ -440,14 +447,13 @@ loop:
 
 	  // TODO: Don't generate eventualities here at all
       if (_has_eventually && _apply_eventually_rule()) {
-        auto &ev =
-          frame.eventualities[_fw_eventualities_lut[_lhs[frame.choosen_formula]]];
+        FormulaID req = _lhs[frame.choosen_formula];
 
-        if (__builtin_expect(ev.is_not_requested(), 0))
-          ev.set_not_satisfied();
+        assert(_bitset.eventualities[req]);
+        frame.requests[req] = true;
 
         Frame new_frame(frame);
-        new_frame.formulas[_lhs[frame.choosen_formula]] = true;
+        new_frame.formulas[req] = true;
         _stack.push(std::move(new_frame));
 
         ++_stats.total_frames;
@@ -458,14 +464,14 @@ loop:
       }
 
       if (_has_until && _apply_until_rule())
-	  {
-        auto &ev =
-          frame.eventualities[_fw_eventualities_lut[_rhs[frame.choosen_formula]]];
-        if (__builtin_expect(ev.is_not_requested(), 0))
-          ev.set_not_satisfied();
+	    {
+        FormulaID req = _rhs[frame.choosen_formula];
+
+        assert(_bitset.eventualities[req]);
+        frame.requests[req] = true;
 
         Frame new_frame(frame);
-        new_frame.formulas[_rhs[frame.choosen_formula]] = true;
+        new_frame.formulas[req] = true;
         _stack.push(std::move(new_frame));
 
         ++_stats.total_frames;
@@ -500,20 +506,22 @@ loop:
 
     std::tie(loop_result, _loop_state) = _check_loop_rule();
     if (loop_result)
-	{
+	  {
       _result = Result::SATISFIABLE;
       _state = State::PAUSED;
 
-	  _print_stats();
+	    _print_stats();
+      __dump_current_branch();
 
       return _result;
     }
 
     if (_check_prune0_rule() || _check_prune_rule())
-	{
+	  {
       _rollback_to_latest_choice();
       ++_stats.total_frames;
       ++_stats.cross_by_prune;
+
       goto loop;
     }
 
@@ -538,9 +546,10 @@ loop:
     }
 
     frame.type = Frame::STEP;
-    _stack.push(std::move(new_frame));
 
+    _stack.push(std::move(new_frame));
     ++_stats.total_frames;
+    ++_stats.total_steps;
 
     _stats.maximum_model_size = std::max(
       _stats.maximum_model_size, static_cast<uint64_t>(_stack.top().id));
@@ -560,12 +569,11 @@ void Solver::_update_eventualities_satisfaction()
   Frame &frame = _stack.top();
 
   uint64_t i = 0;
-  std::for_each(frame.eventualities.begin(), frame.eventualities.end(),
-                [&](Eventuality &ev) {
-                  if (frame.formulas[_bw_eventualities_lut[i]])
-                    ev.set_satisfied(frame.id);
-                  ++i;
-                });
+  for(Eventuality &ev : frame.eventualities) {
+    if (frame.formulas[_bw_eventualities_lut[i]])
+      ev.set_satisfied(frame.id);
+    ++i;
+  }
 }
 
 void Solver::_update_history()
@@ -589,60 +597,61 @@ void Solver::_update_history()
 
 std::pair<bool, FrameID> Solver::_check_loop_rule() const
 {
-  const Frame &top_frame = _stack.top();
-  const FrameID first_frame_id = top_frame.first->id;
+  const Frame &frame = _stack.top();
 
-  if (top_frame.first == &top_frame)
+  if (frame.first == &frame)
     return std::make_pair(false, FrameID(0));
 
+  size_t i = 0;
   bool ret =
-    std::all_of(top_frame.eventualities.begin(), top_frame.eventualities.end(),
-                [first_frame_id](Eventuality ev) {
-                  return ev.is_not_requested() ||
-                         (ev.is_satisfied() && ev.id() > first_frame_id);
-                });
+    std::all_of(frame.eventualities.begin(), frame.eventualities.end(),
+      [&](Eventuality ev) {
+        return !frame.requests[_bw_eventualities_lut[i++]] ||
+          (ev.is_satisfied() && ev.id() >= frame.first->id);
+      }
+    );
 
-  return std::make_pair(ret, first_frame_id);
+  return std::make_pair(ret, frame.first->id);
 }
 
 bool Solver::_check_prune0_rule() const
 {
-  const Frame &top_frame = _stack.top();
-  const FrameID prev_frame_id = top_frame.prev->id;
+  const Frame &frame = _stack.top();
 
-  if (top_frame.prev == &top_frame)
+  if (frame.prev == &frame)
     return false;
 
-  return !top_frame.eventualities.empty() &&
-         std::none_of(top_frame.eventualities.begin(),
-                      top_frame.eventualities.end(),
-                      [&, prev_frame_id](Eventuality ev) {
-                        if (ev.is_not_requested() || ev.is_not_satisfied())
-                          return false;
+  size_t i = 0;
+  return
+    std::none_of(frame.eventualities.begin(), frame.eventualities.end(),
+      [&](Eventuality ev) {
+        if (!frame.requests[_bw_eventualities_lut[i++]])
+          return false;
 
-                        return ev.id() > prev_frame_id;
-                      });
+        return ev.is_satisfied() && ev.id() > frame.prev->id;
+      }
+    );
 }
 
 bool Solver::_check_prune_rule() const
 {
-  const Frame &top_frame = _stack.top();
+  const Frame &frame = _stack.top();
 
-  if (top_frame.prev == top_frame.first)
+  if (frame.prev == frame.first)
     return false;
 
-  uint64_t i = 0;
-  return std::all_of(
-    top_frame.eventualities.begin(), top_frame.eventualities.end(),
-    [&top_frame, &i](Eventuality ev) {
-      if (ev.is_not_requested() || ev.is_not_satisfied() ||
-          ev.id() <= top_frame.prev->id) {
-        ++i;
+  size_t i = 0;
+  return
+    std::all_of(frame.eventualities.begin(), frame.eventualities.end(),
+    [&](Eventuality ev) {
+      if (!frame.requests[_bw_eventualities_lut[i]])
         return true;
-      }
 
-      bool ret = top_frame.prev->eventualities[i].is_satisfied() &&
-                 top_frame.prev->eventualities[i].id() > top_frame.first->id;
+      assert(frame.prev->first == frame.first);
+      bool ret =
+        !(ev.is_satisfied() && ev.id() >= frame.prev->id)
+           || (frame.prev->eventualities[i].is_satisfied() &&
+               frame.prev->eventualities[i].id() >= frame.first->id);
       ++i;
       return ret;
     });
@@ -756,6 +765,7 @@ FormulaPtr inline Solver::Formula() const
 void Solver::_print_stats() const
 {
 	format::debug("Total frames: {}", _stats.total_frames);
+  format::debug("Total STEPs: {}", _stats.total_steps);
 	format::debug("Maximum model size: {}", _stats.maximum_model_size);
 	format::debug("Maximum depth: {}", _stats.maximum_frames);
 	format::debug("Cross by contradiction: {}",
@@ -763,37 +773,68 @@ void Solver::_print_stats() const
 	format::debug("Cross by prune: {}", _stats.cross_by_prune);
 }
 
-void Solver::__dump_current_formulas() const
+void Solver::__dump_frame(Frame const*frame) const
+{
+  format::verbose("Frame n. {}", (size_t)frame->id);
+  format::verbose("Prev frame n. {}", (size_t)frame->prev->id);
+  format::verbose("First frame n. {}", (size_t)frame->first->id);
+  __dump_frame_formulas(frame);
+
+  format::verbose("- Eventualities:");
+  __dump_requested_eventualities(frame);
+  __dump_satisfied_eventualities(frame);
+
+  format::verbose("");
+}
+
+void Solver::__dump_frame_formulas(Frame const*frame) const
 {
   PrettyPrinter p;
+  format::verbose("- Formulas:");
   for (uint64_t i = 0; i < _subformulas.size(); ++i)
-    if (_stack.top().formulas[i])
-      format::verbose("{}", p.to_string(_subformulas[i]));
+    if (frame->formulas[i])
+      format::verbose("  - {}", p.to_string(_subformulas[i]));
 }
 
-void Solver::__dump_current_eventualities() const
+void Solver::__dump_satisfied_eventualities(Frame const*frame) const
 {
   PrettyPrinter p;
-  for (uint64_t i = 0; i < _bw_eventualities_lut.size(); ++i)
-    format::verbose("{} : {}", _subformulas[_bw_eventualities_lut[i]],
-                    static_cast<uint64_t>(_stack.top().eventualities[i].id()));
+  size_t i = 0;
+
+  format::verbose("  - Satisfied: ");
+  for(Eventuality ev : frame->eventualities) {
+    if(ev.is_satisfied() && ev.id() >= frame->first->id)
+      format::verbose("    - {} at {}",
+        p.to_string(_subformulas[_bw_eventualities_lut[i]]), (size_t)ev.id());
+    ++i;
+  }
 }
 
-void Solver::__dump_eventualities(FrameID id) const
+void Solver::__dump_requested_eventualities(Frame const*frame) const
 {
   PrettyPrinter p;
-  Frame *current_frame = _stack.top().chain;
-  while (current_frame) {
-    if (current_frame->id == id)
-      break;
 
+  format::verbose("  - Requested:");
+  for(size_t i = 0; i < _number_of_formulas; ++i) {
+    if(frame->requests[i])
+      format::verbose("    - {}", p.to_string(_subformulas[i]));
+  }
+}
+
+void Solver::__dump_current_branch() const
+{
+  PrettyPrinter p;
+  std::deque<Frame const*> frames;
+  Frame const*current_frame = &_stack.top();
+
+  while(current_frame) {
+    frames.push_front(current_frame);
     current_frame = current_frame->chain;
   }
 
-  for (uint64_t i = 0; i < _bw_eventualities_lut.size(); ++i)
-	  format::verbose(
-		  "{} : {}", _subformulas[_bw_eventualities_lut[i]],
-		  static_cast<uint64_t>(Container(_stack)[id].eventualities[i].id()));
+  for(Frame const*frame : frames) {
+    __dump_frame(frame);
+  }
 }
 
 static bool formula_ordering_func(const FormulaPtr& a, const FormulaPtr& b)

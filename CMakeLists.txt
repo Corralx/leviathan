@@ -45,12 +45,15 @@ if (ENABLE_TESTS)
     list(GET TEST 0 FILE)
     list(GET TEST 1 RESULT)
 
+		set(TEST_NAME "${FILE}:${RESULT}")
     add_test(
-      NAME ${FILE}
+      NAME "${TEST_NAME}"
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       COMMAND
         /bin/bash -c
         "test $($<TARGET_FILE:checker> --parsable '${FILE}') = '${RESULT}'"
     )
+
+		set_tests_properties("${TEST_NAME}" PROPERTIES TIMEOUT 30)
   endforeach()
 endif()

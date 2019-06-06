@@ -70,7 +70,7 @@ using FormulaPtr = std::shared_ptr<Formula>;
 class True : public Formula {
 public:
   True() : Formula(Type::True) {}
-  virtual ~True() {}
+  virtual ~True() override {}
   static const Type type = Type::True;
 
   void accept(Visitor &v) const override;
@@ -83,7 +83,7 @@ TruePtr make_true();
 class False : public Formula {
 public:
   False() : Formula(Type::False) {}
-  virtual ~False() {}
+  virtual ~False() override {}
   static const Type type = Type::False;
 
   void accept(Visitor &v) const override;
@@ -97,7 +97,7 @@ class Atom : public Formula {
 public:
   Atom() = delete;
   Atom(const std::string &name) : Formula(Type::Atom), _name(name) {}
-  virtual ~Atom() {}
+  virtual ~Atom() override {}
   const std::string &name() const { return _name; }
   static const Type type = Type::Atom;
 
@@ -116,7 +116,7 @@ AtomPtr make_atom(const std::string &name);
   public:                                                       \
     _Type() = delete;                                           \
     _Type(const FormulaPtr &f) : Formula(Type::_Type), _f(f) {} \
-    virtual ~_Type() {}                                         \
+    virtual ~_Type() override {}                                \
     const FormulaPtr &formula() const { return _f; }            \
     static const Type type = Type::_Type;                       \
                                                                 \
@@ -136,7 +136,7 @@ AtomPtr make_atom(const std::string &name);
       : Formula(Type::_Type), _f1(f1), _f2(f2)        \
     {                                                 \
     }                                                 \
-    virtual ~_Type() {}                               \
+    virtual ~_Type() override {}                      \
     const FormulaPtr &left() const { return _f1; }    \
     const FormulaPtr &right() const { return _f2; }   \
     static const Type type = Type::_Type;             \

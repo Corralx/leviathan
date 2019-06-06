@@ -1,13 +1,20 @@
 # Leviathan
 
 [![Build Status](https://travis-ci.org/Corralx/leviathan.svg?branch=master)](https://travis-ci.org/Corralx/leviathan)
-[![Build status](https://ci.appveyor.com/api/projects/status/d9pox240noqo6mo0/branch/master?svg=true)](https://ci.appveyor.com/project/Corralx/leviathan/branch/master)
 
 ## About
 
 Leviathan is an implementation of a tableau method for [LTL](https://en.wikipedia.org/wiki/Linear_temporal_logic) satisfiability checking based on the paper "A new rule for a traditional tree-style LTL tableau" by [Mark Reynolds](http://www.csse.uwa.edu.au/~mark/research/Online/ltlsattab.html).
 
 This work has been accepted for publication at [IJCAI-16](http://ijcai-16.org/index.php/welcome/view/home) and a preprint can be found [here](http://corralx.me/public/leviathan_preprint.pdf).
+
+### WARNING
+
+If you used or are using the tool and checked it out before June 6, 2019, please update to the latest
+revision. A nasty bug was fixed that could cause some satisfiable formulas to be
+reported as unsatisfiable.
+
+Thanks to Nikhil Babu from the ANU for reporting it.
 
 ### Usage
 
@@ -69,4 +76,3 @@ Several open-source third-party libraries are currently used in this project:
 * [cppformat](https://github.com/fmtlib/fmt) to format the output
 * [tclap](http://tclap.sourceforge.net/) to parse the command line arguments
 * [flexc++](https://fbb-git.github.io/flexcpp/) and [bisonc++](https://fbb-git.github.io/bisoncpp/) as the parser generators
-

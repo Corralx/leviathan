@@ -24,7 +24,7 @@ namespace detail {
 class Simplifier : public Visitor {
 public:
   Simplifier() : result(nullptr), rulesApplied(true) {}
-  virtual ~Simplifier() {}
+  virtual ~Simplifier() override {}
   FormulaPtr simplify(FormulaPtr formula);
 
 protected:

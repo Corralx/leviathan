@@ -30,23 +30,14 @@ using Bitset = boost::dynamic_bitset<uint64_t>;
 // TODO: Remove set_ and is_ from functions name
 class Eventuality {
 public:
-  Eventuality() : _id(NOT_REQUESTED) {}
+  Eventuality() : _id(-1) {}
   Eventuality(FrameID id) : _id(id) {}
   FrameID &id() { return _id; }
   FrameID id() const { return _id; }
-  bool is_not_requested() const { return _id == FrameID(NOT_REQUESTED); }
-  bool is_not_satisfied() const { return _id == FrameID(NOT_SATISFIED); }
-  bool is_satisfied() const { return _id < FrameID(NOT_SATISFIED); }
-  void set_not_requested() { _id = FrameID(NOT_REQUESTED); }
-  void set_not_satisfied() { _id = FrameID(NOT_SATISFIED); }
+  bool is_satisfied() const { return _id >= 0; }
   void set_satisfied(const FrameID &id) { _id = id; }
 private:
   FrameID _id;
-
-  static constexpr uint64_t NOT_REQUESTED =
-    std::numeric_limits<uint64_t>::max();
-  static constexpr uint64_t NOT_SATISFIED =
-    std::numeric_limits<uint64_t>::max() - 1;
 };
 
 using Eventualities =
@@ -57,6 +48,7 @@ struct Frame {
 
   Bitset formulas;
   Bitset to_process;
+  Bitset requests; // stored here as it needs a lookup to get it from `formulas`
   Eventualities eventualities;
   FrameID id;
   FormulaID choosen_formula;
@@ -71,6 +63,7 @@ struct Frame {
         uint64_t number_of_formulas, uint64_t number_of_eventualities)
     : formulas(number_of_formulas),
       to_process(number_of_formulas),
+      requests(number_of_formulas),
       eventualities(number_of_eventualities),
       id(_id),
       choosen_formula(FormulaID::max()),
@@ -88,6 +81,7 @@ struct Frame {
   Frame(const Frame &_frame)
     : formulas(_frame.formulas),
       to_process(_frame.to_process),
+      requests(_frame.requests),
       eventualities(_frame.eventualities,
                     _frame.eventualities.get_allocator()),
       id(_frame.id),
@@ -105,22 +99,16 @@ struct Frame {
         const Eventualities &_eventualities, Frame *chainPtr)
     : formulas(number_of_formulas),
       to_process(number_of_formulas),
+      requests(number_of_formulas),
       eventualities(_eventualities, _eventualities.get_allocator()),
       id(_id),
       choosen_formula(FormulaID::max()),
       chain(chainPtr),
-	  first(nullptr),
-	  prev(nullptr),
+	    first(nullptr),
+	    prev(nullptr),
       type(UNKNOWN)
   {
     to_process.set();
-	// TODO: Check if this is needed when we don't generate eventualities beforehand
-	std::for_each(eventualities.begin(), eventualities.end(),
-				  [&](Eventuality &ev)
-	{
-		if (ev.is_satisfied())
-			ev.set_not_requested();
-	});
   }
 };
 }

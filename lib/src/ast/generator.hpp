@@ -27,7 +27,7 @@ namespace detail {
 class Generator : public Visitor {
 public:
   Generator() : _formulas(), _simplifier() {}
-  ~Generator() {}
+  virtual ~Generator() override {}
   void generate(const FormulaPtr f);
 
   const std::vector<FormulaPtr> &formulas() const { return _formulas; }

@@ -23,7 +23,7 @@
 namespace LTL {
 namespace detail {
 
-template <typename Derived>
+template <typename Derived, typename T = size_t>
 class Identifiable {
 public:
   constexpr Identifiable() : _id(0) {}
@@ -35,7 +35,7 @@ public:
     return *this;
   }
 
-  inline constexpr operator size_t() const { return static_cast<size_t>(_id); }
+  inline constexpr operator T() const { return static_cast<T>(_id); }
 
   inline constexpr friend bool operator==(const Derived &d1, const Derived &d2)
   {
@@ -93,36 +93,36 @@ public:
     return d1._id >= d2._id;
   }
 
-  template <typename T>
-  inline constexpr friend Derived operator+(const Derived &d, T c)
+  template <typename U>
+  inline constexpr friend Derived operator+(const Derived &d, U c)
   {
-    return Derived(d._id + static_cast<uint64_t>(c));
+    return Derived(d._id + static_cast<T>(c));
   }
 
-  template <typename T>
-  inline constexpr friend Derived operator-(const Derived &d, T c)
+  template <typename U>
+  inline constexpr friend Derived operator-(const Derived &d, U c)
   {
-    return Derived(d._id - static_cast<uint64_t>(c));
+    return Derived(d._id - static_cast<T>(c));
   }
 
   inline static constexpr Derived max()
   {
-    return Derived(std::numeric_limits<uint64_t>::max());
+    return Derived(std::numeric_limits<T>::max());
   }
 
   inline static constexpr Derived min()
   {
-    return Derived(std::numeric_limits<uint64_t>::max());
+    return Derived(std::numeric_limits<T>::max());
   }
 
 private:
-  uint64_t _id;
+  size_t _id;
 };
 
-class FrameID : public Identifiable<FrameID> {
+class FrameID : public Identifiable<FrameID, int64_t> {
 public:
   constexpr FrameID() {}
-  constexpr explicit FrameID(uint64_t id) : Identifiable(id) {}
+  constexpr explicit FrameID(int64_t id) : Identifiable(id) {}
   constexpr FrameID(const FrameID &id) : Identifiable(id) {}
   FrameID &operator=(const FrameID &) = default;
 };
@@ -140,7 +140,7 @@ public:
 template <typename T>
 std::ostream &operator<<(std::ostream &os, LTL::detail::Identifiable<T> id)
 {
-  return os << uint64_t(id);
+  return os << static_cast<T>(id);
 }
 
 namespace std {
