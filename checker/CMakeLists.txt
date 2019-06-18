@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 3.10)
 project (checker CXX)
 
 # Prevent Boost library autolink
@@ -12,9 +12,9 @@ set (SRC main.cpp)
 add_executable (checker ${SRC})
 
 target_include_directories(
-  checker 
-  PRIVATE 
-    checker/ 
+  checker
+  PRIVATE
+    checker/
     "${CPPUTILS_HEADERS}"
     "${TCLAP_HEADERS}"
     "${STDOPTIONAL_HEADERS}"
@@ -30,16 +30,17 @@ set(
   -Wno-exit-time-destructors
 )
 
-target_compile_options(checker PUBLIC 
+target_compile_options(checker PUBLIC
   "$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:${WARNINGS}>")
 
 if(STATIC_LIBS MATCHES "y")
   set_target_properties(checker PROPERTIES LINK_FLAGS "-static -pthread")
 endif()
 
-set_property(TARGET checker 
+set_property(TARGET checker PROPERTY OUTPUT_NAME leviathan)
+set_property(TARGET checker
              PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 
-target_link_libraries (checker leviathan)
+target_link_libraries (checker leviathan tclap)
 
 install (TARGETS checker RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

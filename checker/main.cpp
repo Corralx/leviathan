@@ -20,6 +20,7 @@
 #include <limits>
 #include <string>
 #include <vector>
+#include <cstring>
 
 #ifdef _MSC_VER
 #define strerror_safe(error_msg, error_length, errno) \
@@ -29,7 +30,7 @@
   (strerror_r(errno, error_msg, error_length))
 #endif
 
-#include "optional.hpp"
+#include "boost/optional.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated"
@@ -64,8 +65,6 @@
 
 namespace format = LTL::format;
 using namespace format::colors;
-using std::experimental::optional;
-using std::experimental::nullopt;
 
 static constexpr auto leviathan_version = "0.3.0";
 
@@ -136,7 +135,7 @@ static TCLAP::ValueArg<uint64_t> depth(
   false, std::numeric_limits<uint64_t>::max(), "number");
 }
 
-void solve(std::string const &, optional<size_t> current = nullopt);
+void solve(std::string const &, boost::optional<size_t> current = boost::none);
 void print_progress_status(LTL::FormulaPtr const&, size_t);
 void batch(std::string const &);
 void parse(std::string const&formula);
@@ -166,7 +165,7 @@ void print_progress_status(LTL::FormulaPtr const& f, size_t current)
   format::message("{}{}{}", msg, formula, ellipses);
 }
 
-void solve(const std::string &input, optional<size_t> current)
+void solve(const std::string &input, boost::optional<size_t> current)
 {
   std::stringstream stream(input);
   LTL::Parser parser(stream, [&](std::string err) {
@@ -216,7 +215,8 @@ void batch(std::string const &filename)
   if (!file) {
     static constexpr size_t error_length = 128;
     char error_msg[error_length];
-    strerror_safe(error_msg, error_length, errno);
+    char *r = strerror_safe(error_msg, error_length, errno);
+    (void)r;
     format::fatal("Unable to open the file \"{}\": {}", filename, error_msg);
   }
 

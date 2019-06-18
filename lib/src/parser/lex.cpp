@@ -23,7 +23,7 @@ namespace LTL {
 namespace detail {
 
 namespace {
-optional<Token> symbol(std::istream &s)
+boost::optional<Token> symbol(std::istream &s)
 {
   char ch = char(s.peek());
 
@@ -59,7 +59,7 @@ optional<Token> symbol(std::istream &s)
         s.get();
         return Token{Token::Implies};
       }
-      return nullopt;
+      return boost::none;
 
     // '=' or '=>'
     case '=':
@@ -82,7 +82,7 @@ optional<Token> symbol(std::istream &s)
         s.get();
         return ch != '<' ? Token{Token::Iff} : Token{Token::Eventually};
       }
-      return nullopt;
+      return boost::none;
 
     case '[':
       s.get();
@@ -90,13 +90,13 @@ optional<Token> symbol(std::istream &s)
         s.get();
         return Token{Token::Always};
       }
-      return nullopt;
+      return boost::none;
   }
 
-  return nullopt;
+  return boost::none;
 }
 
-optional<Token> keyword(std::istream &s)
+boost::optional<Token> keyword(std::istream &s)
 {
   static std::map<std::string, Token::Type> keywords = {
     {"NOT", Token::Not},      {"AND", Token::And},
@@ -111,14 +111,14 @@ optional<Token> keyword(std::istream &s)
   std::string kw;
 
   if (!s.good())
-    return nullopt;
+    return boost::none;
 
   if (isalpha(s.peek())) {
     kw += char(s.peek());
     s.get();
   }
   else
-    return nullopt;
+    return boost::none;
 
   while (s.good() && isalnum(s.peek())) {
     kw += char(s.peek());
@@ -126,7 +126,7 @@ optional<Token> keyword(std::istream &s)
   }
   if (!s.good() && !s.eof()) {
     std::cout << "Li mortacci tua\n";
-    return nullopt;
+    return boost::none;
   }
 
   auto it = keywords.find(kw);
@@ -138,16 +138,16 @@ optional<Token> keyword(std::istream &s)
 
 }  // namespace
 
-optional<Token> Lexer::_lex()
+boost::optional<Token> Lexer::_lex()
 {
   while (_stream.good() && isspace(_stream.peek())) {
     _stream.get();
   }
 
   if (!_stream.good())
-    return nullopt;
+    return boost::none;
 
-  optional<Token> t = symbol(_stream);
+  boost::optional<Token> t = symbol(_stream);
   if (t)
     return t;
 

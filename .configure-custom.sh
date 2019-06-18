@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# This file is sourced by the configure script, 
+# This file is sourced by the configure script,
 # it's useless to call it directly
 #
 
@@ -10,7 +10,7 @@
 #
 DISABLE_VARS="tests|no|ENABLE_TESTS"
 
-WITH_VARS="static-libs|no|STATIC_LIBS"
+WITH_VARS="static-libs|yes|STATIC_LIBS"
 
 #
 # Chose compiler from Travis
@@ -37,4 +37,3 @@ if [ "x$TRAVIS_GNU_VERSION" != "x" ]; then
     CXX=g++-$TRAVIS_GNU_VERSION
   fi
 fi
-

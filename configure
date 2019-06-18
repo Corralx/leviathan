@@ -24,7 +24,7 @@
 TOP_SRCDIR="$(dirname $0)"
 CMAKE_CMD="cmake ${TOP_SRCDIR}"
 
-BUILD_TYPE="Debug"
+BUILD_TYPE="Release"
 PREFIX=/usr/local
 LIBDIR=
 

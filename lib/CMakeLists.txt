@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 3.10)
 project (lib CXX)
 
 # Boost library
@@ -51,27 +51,19 @@ set (
 # project files made by IDE generators (Xcode, VS, ecc...)
 add_library (leviathan STATIC ${SRC} ${HEADERS})
 
+target_compile_features(leviathan PUBLIC cxx_std_14)
+
 target_include_directories(
   leviathan
   PRIVATE src/
-  PUBLIC
-    include/
-    src/new_parser/
-    "${CPPUTILS_HEADERS}"
-    "${TCLAP_HEADERS}"
-    "${STDOPTIONAL_HEADERS}"
-    "${Boost_INCLUDE_DIRS}"
+  PUBLIC include/
 )
 
 # Dependencies
-target_link_libraries (leviathan cppformat ${Boost_LIBRARIES})
+target_link_libraries (leviathan PUBLIC fmt ${Boost_LIBRARIES})
 
 # General options
 set(MSVC_OPTIONS /MP)
-
-set(GNU_OPTIONS -std=c++11)
-
-set(CLANG_OPTIONS -std=c++11)
 
 target_compile_options(
   leviathan PUBLIC

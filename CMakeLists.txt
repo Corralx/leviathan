@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 3.10)
 
 if (NOT CMAKE_BUILD_TYPE MATCHES "")
 	message(STATUS "Configuring in ${CMAKE_BUILD_TYPE} mode")
@@ -8,12 +8,12 @@ project (leviathan)
 
 include (GNUInstallDirs)
 
-option(STATIC_LIBS "Enable static linking" OFF)
+option(STATIC_LIBS "Enable static linking" ON)
 option(ENABLE_TESTS "Enable test suite" ON)
 
 if(STATIC_LIBS)
   set(BUILD_SHARED_LIBS OFF)
-  message("-- Linking a static project")
+  message("-- Linking with static libraries")
 else()
   set(BUILD_SHARED_LIBS ON)
 endif()
@@ -22,9 +22,13 @@ if(CMAKE_GENERATOR MATCHES "Xcode")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isysroot /")
 endif ()
 
-add_subdirectory (external/cppformat)
+# External libraries
+option(FMT_PEDANTIC "" ON)
+option(FMT_WERROR "" ON)
+add_subdirectory (external/fmt)
 add_subdirectory (external/tclap)
-add_subdirectory (external/optional)
+
+# Leviathan components
 add_subdirectory (lib)
 add_subdirectory (checker)
 

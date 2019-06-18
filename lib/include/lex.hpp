@@ -22,14 +22,10 @@
 #include <cassert>
 #include <cctype>
 
-#include <optional.hpp>
+#include <boost/optional.hpp>
 
 namespace LTL {
 namespace detail {
-
-using std::experimental::optional;
-using std::experimental::make_optional;
-using std::experimental::nullopt;
 
 struct Token {
   enum Type {
@@ -97,20 +93,20 @@ struct Token {
   }
 
   Type type;
-  optional<std::string> atom = nullopt;
+  boost::optional<std::string> atom = boost::none;
 };
 
 class Lexer
 {
 public:
   explicit Lexer(std::istream &stream) : _stream(stream) {}
-  optional<Token> get() { return _token = _lex(); }
-  optional<Token> peek() const { return _token; }
+  boost::optional<Token> get() { return _token = _lex(); }
+  boost::optional<Token> peek() const { return _token; }
 
 private:
-  optional<Token> _lex();
+  boost::optional<Token> _lex();
 
-  optional<Token> _token = nullopt;
+  boost::optional<Token> _token = boost::none;
   std::istream &_stream;
 };
 

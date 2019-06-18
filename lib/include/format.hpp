@@ -16,10 +16,6 @@
 
 #pragma once
 
-#ifndef FMT_USE_VARIADIC_TEMPLATES
-#error "C++ Format must be compiled with support for variadic templates"
-#endif
-
 #include <atomic>
 #include <cstdint>
 #include <cstdio>
@@ -40,7 +36,8 @@
 #pragma GCC diagnostic ignored "-Wswitch-enum"
 #pragma GCC diagnostic ignored "-Wweak-vtables"
 
-#include "cppformat/format.h"
+#include "fmt/format.h"
+#include "fmt/ostream.h"
 
 #pragma GCC diagnostic pop
 

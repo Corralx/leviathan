@@ -20,28 +20,28 @@
 namespace LTL {
 namespace detail {
 
-optional<Token> Parser::peek() {
+boost::optional<Token> Parser::peek() {
   return _lex.peek();
 }
 
-optional<Token> Parser::peek(Token::Type t, std::string const&err) {
+boost::optional<Token> Parser::peek(Token::Type t, std::string const&err) {
   auto tok = peek();
   if(!tok || tok->type == t) {
     _error("Expected " + err);
-    return nullopt;
+    return boost::none;
   }
 
   return tok;
 }
 
-optional<Token> Parser::consume() {
+boost::optional<Token> Parser::consume() {
   auto tok = peek();
   if(tok)
     _lex.get();
   return tok;
 }
 
-optional<Token> Parser::consume(Token::Type t, std::string const&err) {
+boost::optional<Token> Parser::consume(Token::Type t, std::string const&err) {
   auto tok = peek(t, err);
   if(tok)
     _lex.get();
