@@ -22,13 +22,15 @@
 #include <vector>
 #include <cstring>
 
+inline void strerror_safe(int errnum, char *error_msg, int buflen)
+{
 #ifdef _MSC_VER
-#define strerror_safe(error_msg, error_length, errno) \
-  (strerror_s(error_msg, error_length, errno))
+  strerror_s(error_msg, buflen, errnum);
 #else
-#define strerror_safe(error_msg, error_length, errno) \
-  ((void)strerror_r(errno, error_msg, error_length))
+  char *r = reinterpret_cast<char*>(strerror_r(errnum, error_msg, buflen));
+  (void)r;
 #endif
+}
 
 #include "boost/optional.hpp"
 
@@ -217,7 +219,7 @@ bool batch(std::string const &filename)
   if (!file) {
     static constexpr size_t error_length = 128;
     char error_msg[error_length];
-    strerror_safe(error_msg, error_length, errno);
+    strerror_safe(errno, error_msg, error_length);
     format::fatal("Unable to open the file \"{}\": {}", filename, error_msg);
   }
 
