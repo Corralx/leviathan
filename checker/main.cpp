@@ -27,7 +27,7 @@
   (strerror_s(error_msg, error_length, errno))
 #else
 #define strerror_safe(error_msg, error_length, errno) \
-  (strerror_r(errno, error_msg, error_length))
+  ((void)strerror_r(errno, error_msg, error_length))
 #endif
 
 #include "boost/optional.hpp"
@@ -135,9 +135,9 @@ static TCLAP::ValueArg<uint64_t> depth(
   false, std::numeric_limits<uint64_t>::max(), "number");
 }
 
-void solve(std::string const &, boost::optional<size_t> current = boost::none);
+bool solve(std::string const &, boost::optional<size_t> current = boost::none);
 void print_progress_status(LTL::FormulaPtr const&, size_t);
-void batch(std::string const &);
+bool batch(std::string const &);
 void parse(std::string const&formula);
 
 // We suppose 80 columns is a good width
@@ -165,7 +165,7 @@ void print_progress_status(LTL::FormulaPtr const& f, size_t current)
   format::message("{}{}{}", msg, formula, ellipses);
 }
 
-void solve(const std::string &input, boost::optional<size_t> current)
+bool solve(const std::string &input, boost::optional<size_t> current)
 {
   std::stringstream stream(input);
   LTL::Parser parser(stream, [&](std::string err) {
@@ -176,7 +176,7 @@ void solve(const std::string &input, boost::optional<size_t> current)
 
   LTL::FormulaPtr formula = parser.parseFormula();
   if (!formula)
-    return;
+    return false;
 
   if (current)
     print_progress_status(formula, *current);
@@ -206,26 +206,30 @@ void solve(const std::string &input, boost::optional<size_t> current)
                     model_format(model, Args::parsable.isSet()));
   }
   format::newline(format::Message);
+
+  return true;
 }
 
-void batch(std::string const &filename)
+bool batch(std::string const &filename)
 {
   std::ifstream file(filename, std::ios::in);
 
   if (!file) {
     static constexpr size_t error_length = 128;
     char error_msg[error_length];
-    char *r = strerror_safe(error_msg, error_length, errno);
-    (void)r;
+    strerror_safe(error_msg, error_length, errno);
     format::fatal("Unable to open the file \"{}\": {}", filename, error_msg);
   }
 
   std::string line;
   size_t line_number = 1;
+  bool clean = true;
   while (std::getline(file, line)) {
-    solve(line, line_number);
+    clean = clean && solve(line, line_number);
     ++line_number;
   }
+
+  return clean;
 }
 
 int main(int argc, char *argv[])
@@ -252,9 +256,7 @@ int main(int argc, char *argv[])
 
   // Begin to process inputs
   if (ltl.isSet())
-    solve(ltl.getValue(), 1);
+    return solve(ltl.getValue(), 1) ? 0 : 1;
   else
-    batch(filename.getValue());
-
-  return 0;
+    return batch(filename.getValue()) ? 0 : 1;
 }
